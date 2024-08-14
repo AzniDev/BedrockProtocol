@@ -14,11 +14,13 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\protocol\serializer;
 
+use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\NbtDataException;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\TreeRoot;
 use pocketmine\network\mcpe\protocol\PacketDecodeException;
+use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\network\mcpe\protocol\types\BlockPosition;
 use pocketmine\network\mcpe\protocol\types\BoolGameRule;
 use pocketmine\network\mcpe\protocol\types\command\CommandOriginData;
@@ -535,6 +537,17 @@ class PacketSerializer extends BinaryStream{
 	}
 
 	/**
+	 * Reads a floating-point Vector2 object with coordinates rounded to 4 decimal places.
+	 *
+	 * @throws BinaryDataException
+	 */
+	public function getVector2() : Vector2{
+		$x = $this->getLFloat();
+		$y = $this->getLFloat();
+		return new Vector2($x, $y);
+	}
+
+	/**
 	 * Writes a floating-point Vector3 object, or 3x zero if null is given.
 	 *
 	 * Note: ONLY use this where it is reasonable to allow not specifying the vector.
@@ -559,6 +572,14 @@ class PacketSerializer extends BinaryStream{
 		$this->putLFloat($vector->x);
 		$this->putLFloat($vector->y);
 		$this->putLFloat($vector->z);
+	}
+
+	/**
+	 * Writes a floating-point Vector2 object
+	 */
+	public function putVector2(Vector2 $vector2) : void{
+		$this->putLFloat($vector2->x);
+		$this->putLFloat($vector2->y);
 	}
 
 	/**
@@ -628,7 +649,10 @@ class PacketSerializer extends BinaryStream{
 		$type = $this->getByte();
 		$immediate = $this->getBool();
 		$causedByRider = $this->getBool();
-		return new EntityLink($fromActorUniqueId, $toActorUniqueId, $type, $immediate, $causedByRider);
+		if($this->getProtocolId() >= ProtocolInfo::PROTOCOL_1_21_20){
+			$vehicleAngularVelocity = $this->getLFloat();
+		}
+		return new EntityLink($fromActorUniqueId, $toActorUniqueId, $type, $immediate, $causedByRider, $vehicleAngularVelocity ?? 0.0);
 	}
 
 	public function putEntityLink(EntityLink $link) : void{
@@ -637,6 +661,9 @@ class PacketSerializer extends BinaryStream{
 		$this->putByte($link->type);
 		$this->putBool($link->immediate);
 		$this->putBool($link->causedByRider);
+		if($this->getProtocolId() >= ProtocolInfo::PROTOCOL_1_21_20){
+			$this->putLFloat($link->vehicleAngularVelocity);
+		}
 	}
 
 	/**

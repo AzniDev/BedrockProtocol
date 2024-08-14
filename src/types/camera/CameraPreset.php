@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\protocol\types\camera;
 
+use pocketmine\math\Vector2;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
@@ -30,6 +31,8 @@ final class CameraPreset{
 		private ?float $zPosition,
 		private ?float $pitch,
 		private ?float $yaw,
+		private ?Vector2 $viewOffset,
+		private ?float $radius,
 		private ?int $audioListenerType,
 		private ?bool $playerEffects
 	){}
@@ -48,6 +51,10 @@ final class CameraPreset{
 
 	public function getYaw() : ?float{ return $this->yaw; }
 
+	public function getViewOffset() : ?Vector2{ return $this->viewOffset; }
+
+	public function getRadius() : ?float{ return $this->radius; }
+
 	public function getAudioListenerType() : ?int{ return $this->audioListenerType; }
 
 	public function getPlayerEffects() : ?bool{ return $this->playerEffects; }
@@ -60,6 +67,10 @@ final class CameraPreset{
 		$zPosition = $in->readOptional($in->getLFloat(...));
 		$pitch = $in->readOptional($in->getLFloat(...));
 		$yaw = $in->readOptional($in->getLFloat(...));
+		if($in->getProtocolId() >= ProtocolInfo::PROTOCOL_1_21_20){
+			$viewOffset = $in->readOptional($in->getVector2(...));
+			$radius = $in->readOptional($in->getLFloat(...));
+		}
 		$audioListenerType = $in->readOptional($in->getByte(...));
 		$playerEffects = $in->readOptional($in->getBool(...));
 
@@ -71,6 +82,8 @@ final class CameraPreset{
 			$zPosition,
 			$pitch,
 			$yaw,
+			$viewOffset ?? null,
+			$radius ?? null,
 			$audioListenerType,
 			$playerEffects
 		);
@@ -85,6 +98,8 @@ final class CameraPreset{
 			$nbt->getTag("pos_z") === null ? null : $nbt->getFloat("pos_z"),
 			$nbt->getTag("rot_x") === null ? null : $nbt->getFloat("rot_x"),
 			$nbt->getTag("rot_y") === null ? null : $nbt->getFloat("rot_y"),
+			null,
+			null,
 			$nbt->getTag("audio_listener_type") === null ? null : match($nbt->getString("audio_listener_type")){
 				"camera" => self::AUDIO_LISTENER_TYPE_CAMERA,
 				"player" => self::AUDIO_LISTENER_TYPE_PLAYER,
@@ -102,6 +117,10 @@ final class CameraPreset{
 		$out->writeOptional($this->zPosition, $out->putLFloat(...));
 		$out->writeOptional($this->pitch, $out->putLFloat(...));
 		$out->writeOptional($this->yaw, $out->putLFloat(...));
+		if($out->getProtocolId() >= ProtocolInfo::PROTOCOL_1_21_20){
+			$out->writeOptional($this->viewOffset, $out->putVector2(...));
+			$out->writeOptional($this->radius, $out->putLFloat(...));
+		}
 		$out->writeOptional($this->audioListenerType, $out->putByte(...));
 		$out->writeOptional($this->playerEffects, $out->putBool(...));
 	}

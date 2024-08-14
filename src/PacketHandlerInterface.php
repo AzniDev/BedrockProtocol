@@ -412,5 +412,13 @@ interface PacketHandlerInterface{
 
 	public function handleAwardAchievement(AwardAchievementPacket $packet) : bool;
 
-	public function handleCloseForm(CloseFormPacket $packet) : bool;
+	public function handleClientboundCloseForm(ClientboundCloseFormPacket $packet) : bool;
+
+	public function handleServerboundLoadingScreen(ServerboundLoadingScreenPacket $packet) : bool;
+
+	public function handleJigsawStructureData(JigsawStructureDataPacket $packet) : bool;
+
+	public function handleCurrentStructureFeature(CurrentStructureFeaturePacket $packet) : bool;
+
+	public function handleServerboundDiagnostics(ServerboundDiagnosticsPacket $packet) : bool;
 }
