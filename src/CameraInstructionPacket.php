@@ -51,6 +51,8 @@ class CameraInstructionPacket extends DataPacket implements ClientboundPacket{
 
 	public function getTarget() : ?CameraTargetInstruction{ return $this->target; }
 
+	public function getRemoveTarget() : ?bool{ return $this->removeTarget; }
+
 	protected function decodePayload(PacketSerializer $in) : void{
 		if($in->getProtocolId() >= ProtocolInfo::PROTOCOL_1_20_30){
 			$this->set = $in->readOptional(fn() => CameraSetInstruction::read($in));
